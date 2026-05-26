@@ -1,11 +1,26 @@
 # Sends raw OCR text to a vision API and returns the structured JSON
 import re
 def extract_date(lines):
-    date_pattern = r"\d{2}[/-]\d{2}[/-]\d{4}"
+    # date_pattern = r"\d{2}[/-]\d{2}[/-]\d{4}"
+    date_patterns = [
+
+    # 2018/08/16
+    r"\d{4}[/-]\d{1,2}[/-]\d{1,2}",
+
+    # 05/07/2025
+    r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}",
+
+    # 05-july-2025
+    r"\d{1,2}[/-][a-zA-Z]{3,9}[/-]\d{2,4}",
+
+    # july-05-2025
+    r"[a-zA-Z]{3,9}[/-]\d{1,2}[/-]\d{2,4}"
+]
     for line in lines:
-        match = re.search(date_pattern, line)
-        if match:
-            return match.group()
+        for date_pattern in date_patterns:
+            match = re.search(date_pattern, line)
+            if match:
+                return match.group()
     return None
 
 def extract_time(lines):
@@ -20,13 +35,16 @@ def extract_time(lines):
 # fuel type extraction
 def extract_fuel_type(lines):
     fuel_map = {
-        "ms": "PETROL",
-        "petrol": "PETROL",
-        "xp95": "PETROL",
-        "diesel": "DIESEL",
-        "hsd": "DIESEL",
-        "speed": "DIESEL"
-        }
+    "ms": "PETROL",
+    "petrol": "PETROL",
+    "xp95": "PETROL",
+    "xp100": "PETROL",
+    "unleaded": "PETROL",
+
+    "diesel": "DIESEL",
+    "hsd": "DIESEL",
+    "speed": "DIESEL"
+}
     for line in lines:
         for fuel, normalized in fuel_map.items():
             if fuel in line:
@@ -55,6 +73,33 @@ def extract_fuel_volume(lines):
                 if match:
                     return match.group()
     return None
+
+def extract_rate(lines):
+    rate_label_list = [
+        "rate",
+        "price",
+        "rate/ltr",
+        "rate/l",
+        "unit price",
+        "rsp",
+        "price/ltr",
+        "price/l",
+        "per ltr",
+        "per l",
+    ]
+    for line in lines:
+        for rate_label in rate_label_list:
+            if rate_label in line:
+                rate_label_line = line
+                rate_pattern = r"\d+(?:\.\d+)?"
+                match = re.search(rate_pattern, rate_label_line)
+                if match:
+                    return match.group()
+
+
+    return None
+
+
 
 # invoice number
     invoice_keywords = [
@@ -93,18 +138,22 @@ def clean_text(text):
 def parse_receipt(text):
 
     text = clean_text(text)
-    
+
     lines = text.splitlines()
     
     date = extract_date(lines)
     time = extract_time(lines)
     fuel_type = extract_fuel_type(lines)
     volume = extract_fuel_volume(lines)
-            
+    rate = extract_rate(lines)
+
+    
+    # return text     
 
     return {
     "date": date,
     "time": time,
     "fuel_type": fuel_type,
-    "volume": volume
+    "volume": volume,
+    "rate": rate
     }
