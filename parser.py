@@ -1,7 +1,71 @@
 # Sends raw OCR text to a vision API and returns the structured JSON
 import re
+def extract_date(lines):
+    date_pattern = r"\d{2}[/-]\d{2}[/-]\d{4}"
+    for line in lines:
+        match = re.search(date_pattern, line)
+        if match:
+            return match.group()
+    return None
 
-def parse_receipt(text):
+def extract_time(lines):
+    # some receipts contain only hours and minutes, so making seconds optional
+    time_pattern = r"\d{2}:\d{2}(?::\d{2})?"
+    for line in lines:
+        match = re.search(time_pattern, line)
+        if match:
+            return match.group()
+    return None
+
+# fuel type extraction
+def extract_fuel_type(lines):
+    fuel_map = {
+        "ms": "PETROL",
+        "petrol": "PETROL",
+        "xp95": "PETROL",
+        "diesel": "DIESEL",
+        "hsd": "DIESEL",
+        "speed": "DIESEL"
+        }
+    for line in lines:
+        for fuel, normalized in fuel_map.items():
+            if fuel in line:
+                return normalized
+
+    return None
+
+# fuel quantity/volume extraction
+def extract_fuel_volume(lines):
+    volume_keyword_types = [
+        "volume",
+        "quantity",
+        "volume(l)",
+        "qty",
+        "volume(ltr.)",
+        "volume(ltr. )",
+        "litres",
+        "liters"
+        ]
+    for line in lines:
+        for keyword in volume_keyword_types:
+            if keyword in line:
+                volume_line = line
+                volume_amount_pattern = r"\d+(?:\.\d+)?"
+                match = re.search(volume_amount_pattern, volume_line)
+                if match:
+                    return match.group()
+    return None
+
+# invoice number
+    invoice_keywords = [
+        "invoice_number",
+        "invoice_no",
+        "invoice#",
+        "bill no",
+        "Invoice no"
+    ]
+
+def clean_text(text):
     # basic text cleaning
     text  = text.lower()
     text = re.sub(r'[^a-zA-Z0-9\s:/.-]', '', text)
@@ -14,93 +78,30 @@ def parse_receipt(text):
             "mobi le": "mobile",
             "vo tume": "volume",
             "mob.no": "mobile no",
-            "receip": "receipt"
+            "receip": "receipt",
+            "vo1ume": "volume",
+            "l1ters": "liters",
+            "l1tres": "litres"
         }
 
     for wrong, correct in replacement.items():
         text = text.replace(wrong, correct)
 
-    # date extraction
-    def extract_date(text):
-        date_pattern = r"\d{2}/\d{2}/\d{4}"
-        lines = text.splitlines()
-        for line in lines:
-            match = re.search(date_pattern, line)
-            if match:
-                return match.group()
-            
-        return None
+    return text
 
-    date = extract_date(text)
 
-    def extract_time(text):
-        # some receipts contain only hours and minutes, so making seconds optional
-        time_pattern = r"\d{2}:\d{2}(?::\d{2})?"
-        lines = text.splitlines()
-        for line in lines:
-            match = re.search(time_pattern, line)
-            if match:
-                return match.group()
-        return None
+def parse_receipt(text):
+
+    text = clean_text(text)
     
-    time = extract_time(text)
-
-    # fuel type extraction
-    def extract_fuel_type(text):
-        fuel_map = {
-        "ms": "PETROL",
-        "petrol": "PETROL",
-        "xp95": "PETROL",
-        "diesel": "DIESEL",
-        "hsd": "DIESEL",
-        "speed": "DIESEL"
-        }
-
-        lines = text.splitlines()
-        for line in lines:
-            for fuel in fuel_map:
-                if fuel in line:
-                    return fuel_map[fuel]
-
-        return None
+    lines = text.splitlines()
     
-    fuel_type = extract_fuel_type(text)
-
-
-    # fuel quantity/volume extraction
-    def extract_fuel_volume(text):
-        volume_keyword_types = [
-            "volume",
-            "quantity",
-            "volume(L)",
-            "qty",
-            "volume(Ltr.)",
-            "volume(Ltr. )",
-            "litres",
-            "liters"
-        ]
-        lines = text.splitlines()
-        for line in lines:
-            for keyword in volume_keyword_types:
-                if keyword in line:
-                    volume_line = line
-                    volume_amount_pattern = r"\d+\.\d+"
-                    match = re.search(volume_amount_pattern, volume_line)
-                    return match.group()
-        return None
-    volume = extract_fuel_volume(text)
+    date = extract_date(lines)
+    time = extract_time(lines)
+    fuel_type = extract_fuel_type(lines)
+    volume = extract_fuel_volume(lines)
             
 
-
-    # invoice number
-    invoice_keywords = [
-        "invoice_number",
-        "invoice_no",
-        "invoice#",
-        "bill no",
-        "Invoice no"
-    ]
-    
     return {
     "date": date,
     "time": time,
