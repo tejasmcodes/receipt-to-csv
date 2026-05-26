@@ -74,6 +74,7 @@ def extract_fuel_volume(lines):
                     return match.group()
     return None
 
+# rate extraction
 def extract_rate(lines):
     rate_label_list = [
         "rate",
@@ -98,6 +99,41 @@ def extract_rate(lines):
 
 
     return None
+
+
+# amount extraction
+def extract_amount(lines):
+    amount_labels = [
+        "amount",
+        "total amount",
+        "total",
+        "sale",
+        "total sale",
+        "total amt",
+        "net amount",
+        "net amt",
+        "paid amount",
+        "amt paid"
+    ]
+    for line in lines:
+        for label in amount_labels:
+            if label in line:
+                amount_label_line = line
+                amount_pattern = r"\d+(?:\.\d+)?"
+                match = re.search(amount_pattern, amount_label_line)
+                if match:
+                    return match.group()
+                
+    return None
+
+def validate_amount(rate, volume, lines):
+    calculated_amount = float(rate) * float(volume)
+    calculated_amount = "{:.2f}".format(calculated_amount)
+    extracted_amount = extract_amount(lines)
+    if extracted_amount is None:
+        return False
+    extracted_amount = float(extracted_amount)
+    return abs(calculated_amount - extracted_amount) < 1
 
 
 
@@ -126,7 +162,8 @@ def clean_text(text):
             "receip": "receipt",
             "vo1ume": "volume",
             "l1ters": "liters",
-            "l1tres": "litres"
+            "l1tres": "litres",
+            "ahount": "amount"
         }
 
     for wrong, correct in replacement.items():
@@ -146,6 +183,7 @@ def parse_receipt(text):
     fuel_type = extract_fuel_type(lines)
     volume = extract_fuel_volume(lines)
     rate = extract_rate(lines)
+    amount = extract_amount(lines)
 
     
     # return text     
@@ -155,5 +193,6 @@ def parse_receipt(text):
     "time": time,
     "fuel_type": fuel_type,
     "volume": volume,
-    "rate": rate
+    "rate": rate,
+    "amount": amount
     }
