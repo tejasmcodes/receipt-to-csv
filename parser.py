@@ -136,15 +136,36 @@ def validate_amount(rate, volume, lines):
     return abs(calculated_amount - extracted_amount) < 1
 
 
-
-# invoice number
-    invoice_keywords = [
-        "invoice_number",
-        "invoice_no",
-        "invoice#",
+# extract bill number -> critical for tracking transaction
+def extract_receipt_no(lines):
+    receipt_labels = [
         "bill no",
-        "Invoice no"
+        "receipt no",
+        "receipt id",
+        "invoice no",
+        "invoice number",
+        "cash memo no",
+        "memo no",
+        "sale no"
     ]
+
+    for line in lines:
+        for label in receipt_labels:
+            if label in line:
+                parts = line.split(":")
+                if len(parts)>1:
+                    receipt_no_part = parts[1]
+                    receipt_no_pattern = r"[a-zA-Z0-9/-]{3,}"
+                    match = re.search(receipt_no_pattern,receipt_no_part)
+                    if match:
+                        return match.group()
+                
+    return None
+
+
+
+   
+        
 
 def clean_text(text):
     # basic text cleaning
@@ -163,7 +184,9 @@ def clean_text(text):
             "vo1ume": "volume",
             "l1ters": "liters",
             "l1tres": "litres",
-            "ahount": "amount"
+            "ahount": "amount",
+            "envoice": "invoice",
+            "receiptt": "receipt"
         }
 
     for wrong, correct in replacement.items():
@@ -184,9 +207,7 @@ def parse_receipt(text):
     volume = extract_fuel_volume(lines)
     rate = extract_rate(lines)
     amount = extract_amount(lines)
-
-    
-    # return text     
+    receipt_no = extract_receipt_no(lines)  
 
     return {
     "date": date,
@@ -194,5 +215,6 @@ def parse_receipt(text):
     "fuel_type": fuel_type,
     "volume": volume,
     "rate": rate,
-    "amount": amount
+    "amount": amount,
+    "receipt_no": receipt_no
     }
