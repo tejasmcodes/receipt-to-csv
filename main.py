@@ -1,23 +1,24 @@
 # Entry point - connects ocr -> parser -> exporter
+import os
 
 from preprocess import preprocess_image
 from ocr import extract_text
 from parser import parse_receipt
+from exporter import create_csv
+from exporter import add_data_to_csv
 
 img = preprocess_image("samples/s5.png")
 text = extract_text(img)
 parsed_data = parse_receipt(text)
 
-print(parsed_data)
+csv_path = "outputs/receipt_data.csv"
+if not os.path.exists(csv_path):
+    create_csv(csv_path)
 
-# {
-#     "date": "", ->done
-#     "time": "", -> done
-#     "station_name": "",
-#     "fuel_type": "", -> done
-#     "quantity_liters": "", -> done
-#     "price_per_liter": "",
-#     "total_amount": "",
-#     "payment_mode": "",
-#     "transaction_id": ""
-# } 
+add_data_to_csv(parsed_data, csv_path)
+
+with open(csv_path,"r", encoding="utf-8") as file:
+    content  = file.read()
+    print(content)
+
+
