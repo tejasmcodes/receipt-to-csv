@@ -23,6 +23,65 @@ def extract_date(lines):
                 return match.group()
     return None
 
+
+def normalize_date(date):
+    if date is None:
+        return None
+
+    months= {
+        "jan": "01",
+        "feb": "02",
+        "mar": "03",
+        "apr": "04",
+        "may": "05",
+        "jun": "06",
+        "jul": "07",
+        "aug": "08",
+        "sep": "09",
+        "oct": "10",
+        "nov": "11",
+        "dec": "12"
+    }
+
+    separators_list = ["-","/","."," "]
+    for separator in separators_list:
+        if separator in date:
+            date = date.split(separator)
+            break
+    
+    for i in range(3):
+        value = date[i]
+        if value[0].isalpha():
+            date[i] = months[value]
+            month_index = i
+            break
+        else:
+            month_index = 1
+
+    dat = None
+    year = None
+    for i in range(3):
+        if i == month_index:
+            month = date[i]
+            continue
+
+        if len(date[i])==1:
+            dat = f"0{date[i]}"
+        elif len(date[i])==2:
+            if dat is None:
+                dat = date[i]
+            else:
+                year = date[i]
+        else:
+            year = date[i]
+
+        
+    normalize_date = f"{year}-{month}-{dat}"
+
+    return normalize_date
+        
+
+
 def extract_time(lines):
     # some receipts contain only hours and minutes, so making seconds optional
     time_pattern = r"\d{2}:\d{2}(?::\d{2})?"
@@ -202,6 +261,7 @@ def parse_receipt(text):
     lines = text.splitlines()
     
     date = extract_date(lines)
+    normalized_date  = normalize_date(date)
     time = extract_time(lines)
     fuel_type = extract_fuel_type(lines)
     volume = extract_fuel_volume(lines)
@@ -210,7 +270,7 @@ def parse_receipt(text):
     receipt_no = extract_receipt_no(lines)  
 
     return {
-    "date": date,
+    "date": normalized_date,
     "time": time,
     "fuel_type": fuel_type,
     "volume": volume,
