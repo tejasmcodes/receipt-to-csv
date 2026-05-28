@@ -51,3 +51,14 @@ def preprocess_image(img_path):
 
     return processed_img
 
+if __name__ == "__main__":
+    import os
+    preprocessed_image = preprocess_image("samples/s7.png")
+    output_dir = "outputs/preprocessed"
+    output_path = os.path.join(output_dir, "s7.png")
+    
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    cv2.imwrite(output_path, preprocessed_image)
+    print(f"Successfully saved the preprocessed image to: {output_path}")

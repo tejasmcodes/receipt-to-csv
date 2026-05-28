@@ -278,3 +278,12 @@ def parse_receipt(text):
     "amount": amount,
     "receipt_no": receipt_no
     }
+
+
+if __name__ == "__main__":
+    from preprocess import preprocess_image
+    from ocr import extract_text
+    preprocessed_image = preprocess_image("samples/s7.png")
+    extracted_text = extract_text(preprocessed_image)
+    parsed_data = parse_receipt(extracted_text)
+    print(parsed_data)
