@@ -130,7 +130,7 @@ def extract_fuel_volume(lines):
                 volume_amount_pattern = r"\d+(?:\.\d+)?"
                 match = re.search(volume_amount_pattern, volume_line)
                 if match:
-                    return match.group()
+                    return float( match.group())
     return None
 
 # rate extraction
@@ -154,7 +154,7 @@ def extract_rate(lines):
                 rate_pattern = r"\d+(?:\.\d+)?"
                 match = re.search(rate_pattern, rate_label_line)
                 if match:
-                    return match.group()
+                    return float(match.group())
 
 
     return None
@@ -181,17 +181,17 @@ def extract_amount(lines):
                 amount_pattern = r"\d+(?:\.\d+)?"
                 match = re.search(amount_pattern, amount_label_line)
                 if match:
-                    return match.group()
+                    return float(match.group())
                 
     return None
 
 def validate_amount(rate, volume, lines):
     calculated_amount = float(rate) * float(volume)
     calculated_amount = "{:.2f}".format(calculated_amount)
+    calculated_amount = float(calculated_amount)
     extracted_amount = extract_amount(lines)
     if extracted_amount is None:
         return False
-    extracted_amount = float(extracted_amount)
     return abs(calculated_amount - extracted_amount) < 1
 
 
@@ -267,6 +267,7 @@ def parse_receipt(text):
     volume = extract_fuel_volume(lines)
     rate = extract_rate(lines)
     amount = extract_amount(lines)
+    validation = validate_amount(rate, volume, lines)
     receipt_no = extract_receipt_no(lines)  
 
     return {
@@ -276,7 +277,8 @@ def parse_receipt(text):
     "volume": volume,
     "rate": rate,
     "amount": amount,
-    "receipt_no": receipt_no
+    "receipt_no": receipt_no,
+    "amount_validation": validation
     }
 
 
