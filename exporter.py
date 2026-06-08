@@ -8,7 +8,8 @@ headers = ["DATE",
             "VOLUME", 
             "RATE",
             "AMOUNT", 
-            "RECEIPT NO"]
+            "RECEIPT NO",
+            "AMOUNT VALIDATED"]
 
 
 data_insert_order = ["date",
@@ -17,7 +18,8 @@ data_insert_order = ["date",
                      "volume",
                      "rate",
                      "amount",
-                     "receipt_no"]
+                     "receipt_no",
+                     "amount_validation"]
 
 def create_csv(file_path):
     with open(file_path,"w",newline="",encoding="utf-8") as file:
