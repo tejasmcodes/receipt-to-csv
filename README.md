@@ -1,5 +1,5 @@
 # 🧾 Receipt → CSV
-
+(This project is built for validating the idea of receipt-to-csv)
 Convert receipt photos into structured CSV files automatically — no manual data entry.
 
 > Built for event management agencies, small businesses, and anyone tired of manually entering receipts into spreadsheets.
@@ -148,24 +148,11 @@ python main.py
 
 ## Roadmap
 
-### V1 — Working Pipeline (In Progress)
+### V1 — Working Pipeline - Done
 - [x] Image preprocessing (scaling, grayscale, deskewing)
 - [x] Tesseract OCR extraction
 - [x] Parsing OCR text
 - [x] CSV export
-
-### V2 — Backend & Web Interface
-- [ ] FastAPI backend
-- [ ] Image upload API
-- [ ] Web frontend
-- [ ] CSV download from UI
-
-### V3 — Generalization & Scaling
-- [ ] Generalized receipt parsing
-- [ ] Fallback parsing system
-- [ ] Multi-format export (Excel/PDF)
-- [ ] Batch receipt processing
-
 
 ---
 
