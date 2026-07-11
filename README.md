@@ -1,5 +1,6 @@
 # 🧾 Receipt → CSV
 (This project is built for validating the idea of receipt-to-csv)
+
 Convert receipt photos into structured CSV files automatically — no manual data entry.
 
 > Built for event management agencies, small businesses, and anyone tired of manually entering receipts into spreadsheets.
